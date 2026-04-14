@@ -209,7 +209,7 @@ class SongSeeder extends Seeder
             ['name' => 'Mantarave', 'duration' => 232, 'date' => '2024-09-26', 'type' => 'single'],
             
             // SINGLE: PROPHECY
-            ['name' => 'PROPHECY', 'duration' => 167, 'date' => '2025-05-01', 'type' => 'single'],
+            ['name' => 'Prophecy', 'duration' => 167, 'date' => '2025-05-01', 'type' => 'single'],
             
             // SINGLE: INTO THE NIGHT
             ['name' => 'Into the Night', 'duration' => 212, 'date' => '2025-05-01', 'type' => 'single'],
@@ -236,7 +236,7 @@ class SongSeeder extends Seeder
             
             Song::create([
                 'name' => $item['name'],
-                'audio_path' => "songs/{$slug}.mp3", 
+                'audio_path' => "songs/{$slug}.m4a", 
                 'cover_path' => "covers/{$slug}.jpg",
                 'duration' => $item['duration'],
                 'release_date' => $item['date'],
