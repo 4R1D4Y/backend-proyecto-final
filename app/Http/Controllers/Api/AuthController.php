@@ -60,7 +60,8 @@ class AuthController extends Controller
     }
 
     public function updateEmail(Request $request) {
-        $request->validate(['email' => 'required|email|unique:users,email,' . $request->user()->id]);
+        $user = $request->user();
+        $request->validate(['email' => 'required|email|unique:users,email,' . $user->id]);
         $request->user()->update(['email' => $request->email]);
         return response()->json(['message' => 'Email actualizado']);
     }
