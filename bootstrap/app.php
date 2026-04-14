@@ -23,7 +23,9 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->validateCsrfTokens(except: [
             'api/login',
             'api/register',
-            'api/logout'
+            'api/logout',
+            'api/songs/*/like',
+            'api/songs/*/favorite'
         ]);
     })
 
