@@ -22,12 +22,18 @@ class SongController extends Controller
         }]);
 
         // 2. Aplicamos filtros dinámicos
-        if ($request->sort === 'recent') {
+        $sortType = $request->query('sort');
+
+        if ($sortType === 'recent') {
             $query->orderBy('release_date', 'desc');
-        } elseif ($request->sort === 'reproductions') {
+        } elseif ($sortType === 'reproductions') {
             $query->orderBy('reproductions', 'desc');
-        } elseif ($request->sort === 'oldest') {
+        } elseif ($sortType === 'name_desc') { // Prueba esta para confirmar
+            $query->orderBy('name', 'asc');
+        } elseif ($sortType === 'oldest') {
             $query->orderBy('release_date', 'asc');
+        } else {
+            $query->orderBy('id', 'asc');
         }
 
         // 3. Obtenemos y formateamos la respuesta
