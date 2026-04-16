@@ -40,8 +40,26 @@ class AuthController extends Controller
             return response()->json(['message' => 'Credenciales incorrectas'], 401);
         }
 
+        if ($user->status === 'suspended' && $user->suspension_time && now()->greaterThan($user->suspension_time)) {
+            $user->update([
+                'status' => 'active',
+                'suspension_time' => null
+            ]);
+        }
+
         if ($user->status !== 'active') {
-            return response()->json(['message' => 'Usuario bloqueado o suspendido'], 403);
+            $data = [
+                'status' => $user->status,
+                'message' => $user->status === 'suspended' 
+                    ? 'Tu cuenta está suspendida temporalmente.' 
+                    : 'Tu cuenta ha sido bloqueada permanentemente.'
+            ];
+
+            if ($user->status === 'suspended' && $user->suspension_time) {
+                $data['until'] = $user->suspension_time->format('d/m/Y H:i');
+            }
+
+            return response()->json($data, 403);
         }
 
         return response()->json([
