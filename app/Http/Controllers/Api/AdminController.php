@@ -118,6 +118,7 @@ class AdminController extends Controller
                 'total_users' => User::count(),
                 'total_songs' => Song::count(),
                 'total_reproductions' => Song::sum('reproductions'),
+                'total_listen_time' => Event::where('event_type', 'playtime')->sum('value'),
             ],
             'top_songs' => Song::orderBy('reproductions', 'desc')
                             ->take(5)
