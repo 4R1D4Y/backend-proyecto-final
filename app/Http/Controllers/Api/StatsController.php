@@ -25,7 +25,7 @@ class StatsController extends Controller
             'song_id' => $validated['song_id'] ?? null,
             'value' => $validated['value'] ?? 0,
             'metadata' => $validated['metadata'] ?? null,
-            'created_at' => now()->toDateString()
+            'created_at' => now()->toDateTimeString()
         ]);
 
         // Si el evento es una reproducción, incrementamos el contador de la canción
@@ -34,22 +34,5 @@ class StatsController extends Controller
         }
 
         return response()->json(['message' => 'Evento registrado con éxito'], 201);
-    }
-
-    public function getGlobalStats() 
-    {
-        return response()->json([
-            'overview' => [
-                'total_users' => User::count(),
-                'total_songs' => Song::count(),
-                'total_reproductions' => Song::sum('reproductions'),
-            ],
-            'top_songs' => Song::orderBy('reproductions', 'desc')
-                            ->take(5)
-                            ->get(['id', 'name', 'reproductions']),
-            'events_distribution' => Event::select('event_type', DB::raw('count(*) as total'))
-                                    ->groupBy('event_type')
-                                    ->get()
-        ]);
     }
 }

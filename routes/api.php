@@ -52,8 +52,9 @@ Route::middleware('auth:sanctum')->group(function () {
 // --- SOLO ADMIN ---
 Route::middleware(['auth:sanctum', 'can:admin-only'])->prefix('admin')->group(function () {
     // Estadísticas globales corregidas a EventController
-    Route::get('/stats', [StatsController::class, 'getGlobalStats']);
-
+    Route::get('/stats', [AdminController::class, 'getDashboardStats']);
+    Route::get('/events', [AdminController::class, 'listEvents']);
+    
     // Gestión de canciones
     Route::get('/songs/all', [AdminController::class, 'listAllSongs']);
     Route::post('/songs', [AdminController::class, 'storeSong']);

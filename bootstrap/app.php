@@ -32,7 +32,9 @@ return Application::configure(basePath: dirname(__DIR__))
             'api/admin/songs',
             'api/admin/songs/*',
             'api/admin/users',
-            'api/admin/users/*'
+            'api/admin/users/*',
+            'api/admin/stats',
+            'api/admin/events'
         ]);
     })
 

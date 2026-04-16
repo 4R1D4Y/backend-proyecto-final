@@ -5,8 +5,10 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Song;
 use App\Models\User;
+use App\Models\Event;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\DB;
 
 class AdminController extends Controller
 {
@@ -88,8 +90,6 @@ class AdminController extends Controller
     }
 
     
-
-
     // --- GESTIÓN DE USUARIOS ---
     public function listUsers() {
         return User::orderBy('created_at', 'desc')->get();
@@ -108,4 +108,32 @@ class AdminController extends Controller
 
         return response()->json(['message' => 'Estado del usuario actualizado', 'user' => $user]);
     }    
+
+
+    // ESTADISTICAS
+    public function getDashboardStats() 
+    {
+        return response()->json([
+            'overview' => [
+                'total_users' => User::count(),
+                'total_songs' => Song::count(),
+                'total_reproductions' => Song::sum('reproductions'),
+            ],
+            'top_songs' => Song::orderBy('reproductions', 'desc')
+                            ->take(5)
+                            ->get(['id', 'name', 'reproductions']),
+            'events_summary' => Event::select('event_type', DB::raw('count(*) as total'))
+                                    ->groupBy('event_type')
+                                    ->get()
+        ]);
+    }
+
+    public function listEvents() 
+    {
+        // Esta es la función que te faltaba para la tabla de eventos
+        return Event::with('song:id,name')
+                    ->orderBy('created_at', 'desc')
+                    ->limit(100)
+                    ->get();
+    }
 }
