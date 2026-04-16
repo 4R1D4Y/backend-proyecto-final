@@ -22,7 +22,7 @@ class AdminController extends Controller
     public function storeSong(Request $request) {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'audio_path' => 'required|file|mimes:mp3,wav|max:20000',
+            'audio_path' => 'required|file|mimes:mp3,wav,m4a,mp4,aac|max:20000',
             'cover_path' => 'required|image|max:5000',
             'type' => 'required|in:single,ep,album',
             'release_date' => 'required|date',
@@ -31,14 +31,14 @@ class AdminController extends Controller
             'collection_order' => 'nullable|integer',
         ]);
 
-        $audioPath = $request->file('audio')->store('songs', 'public');
-        $coverPath = $request->file('cover')->store('covers', 'public');
+        $audioPath = $request->file('audio_path')->store('songs', 'public');
+        $coverPath = $request->file('cover_path')->store('covers', 'public');
 
-        $song = Song::create(array_merge($validated, [
-            'audio_path' => $audioPath,
-            'cover_path' => $coverPath,
-            'status' => 'active'
-        ]));
+        $validated['audio_path'] = $audioPath;
+        $validated['cover_path'] = $coverPath;
+        $validated['status'] = 'active';
+
+        $song = Song::create($validated);
 
         return response()->json($song, 201);
     }
@@ -49,20 +49,20 @@ class AdminController extends Controller
             'type' => 'required|in:single,ep,album',
             'release_date' => 'required|date',
             'duration' => 'required|integer',
-            'audio_path' => 'nullable|file|mimes:mp3,wav',
+            'audio_path' => 'nullable|file|mimes:mp3,wav,m4a,mp4,aac',
             'cover_path' => 'nullable|image',
             'collection_name' => 'nullable|string',
             'collection_order' => 'nullable|integer',
         ]);
 
-        if ($request->hasFile('audio')) {
+        if ($request->hasFile('audio_path')) {
             Storage::disk('public')->delete($song->audio_path);
-            $validated['audio_path'] = $request->file('audio')->store('songs', 'public');
+            $validated['audio_path'] = $request->file('audio_path')->store('songs', 'public');
         }
 
-        if ($request->hasFile('cover')) {
+        if ($request->hasFile('cover_path')) {
             Storage::disk('public')->delete($song->cover_path);
-            $validated['cover_path'] = $request->file('cover')->store('covers', 'public');
+            $validated['cover_path'] = $request->file('cover_path')->store('covers', 'public');
         }
 
         $song->update($validated);

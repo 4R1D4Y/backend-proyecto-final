@@ -28,7 +28,11 @@ return Application::configure(basePath: dirname(__DIR__))
             'api/songs/*/favorite',
             'api/user/email',
             'api/user/password',
-            'api/user/delete'
+            'api/user/delete',
+            'api/admin/songs',
+            'api/admin/songs/*',
+            'api/admin/users',
+            'api/admin/users/*'
         ]);
     })
 
