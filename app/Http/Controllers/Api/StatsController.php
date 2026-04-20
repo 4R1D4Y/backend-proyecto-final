@@ -28,8 +28,9 @@ class StatsController extends Controller
             'created_at' => now()->toDateTimeString()
         ]);
 
-        // Si el evento es una reproducción, incrementamos el contador de la canción
-        if ($validated['event_type'] === 'playtime' && isset($validated['song_id'])) {
+        // Solo sumamos reproducción si el valor es EXACTAMENTE 0
+        // (Cuando pausamos, enviamos 'elapsed' que siempre es >= 2, por lo que NO entrará aquí)
+        if ($validated['event_type'] === 'playtime' && $validated['value'] === 0 && isset($validated['song_id'])) {
             Song::where('id', $validated['song_id'])->increment('reproductions');
         }
 
