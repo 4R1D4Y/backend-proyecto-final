@@ -20,7 +20,7 @@ class Event extends Model
         ];
     }
 
-    public function songs() {
+    public function song() {
         return $this->belongsTo(Song::class);
     }
 }

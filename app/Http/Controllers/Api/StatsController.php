@@ -25,7 +25,6 @@ class StatsController extends Controller
             'song_id' => $validated['song_id'] ?? null,
             'value' => $validated['value'] ?? 0,
             'metadata' => $validated['metadata'] ?? null,
-            'created_at' => now()->toDateTimeString()
         ]);
 
         // Solo sumamos reproducción si el valor es EXACTAMENTE 0
