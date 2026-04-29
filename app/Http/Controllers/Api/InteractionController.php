@@ -18,6 +18,7 @@ class InteractionController extends Controller
                     'name' => $song->name,
                     'audio_path' => asset('storage/' . $song->audio_path),
                     'cover_path' => asset('storage/' . $song->cover_path),
+                    'collection_name' => $song->collection_name,
                     'duration' => $song->duration,
                     'saved_date' => $song->pivot->saved_date, // Fecha en que se guardó
                 ];

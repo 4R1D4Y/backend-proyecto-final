@@ -85,7 +85,19 @@ class AuthController extends Controller
     }
 
     public function updatePassword(Request $request) {
-        $request->validate(['password' => 'required|min:8|confirmed']);
+        $request->validate([
+            'current_password' => 'required',
+            'password' => 'required|min:8|confirmed',
+        ]);
+
+        $user = $request->user();
+
+        // --- ESTA ES LA VERIFICACIÓN QUE TE FALTA ---
+        if (!Hash::check($request->current_password, $user->password)) {
+            return response()->json([
+                'message' => 'La contraseña actual no es correcta.'
+            ], 401); // Devolvemos 401 para que React lo capture como error
+        }
         $request->user()->update(['password' => Hash::make($request->password)]);
         return response()->json(['message' => 'Contraseña actualizada']);
     }
