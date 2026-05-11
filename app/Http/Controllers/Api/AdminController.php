@@ -10,9 +10,22 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
 
+/**
+ * Controlador Administrativo (AdminController).
+ * 
+ * Centraliza las funciones de gestión del sistema, permitiendo el control 
+ * total sobre el catálogo musical, la moderación de usuarios y la 
+ * monitorización de métricas de rendimiento del aplicativo.
+ */
+
 class AdminController extends Controller
 {
-    // --- GESTIÓN DE CANCIONES ---
+    // --- SECCIÓN: GESTIÓN DE CATÁLOGO (CRUD) ---
+
+    /**
+     * Lista todas las canciones registradas.
+     * Transforma las rutas locales en URLs públicas accesibles para el Frontend.
+     */
     public function listAllSongs() {
         return Song::orderBy('created_at', 'desc')->get()->map(function ($song) {
             $song->audio_url = asset('storage/' . $song->audio_path);
@@ -21,6 +34,11 @@ class AdminController extends Controller
         });
     }
 
+    /**
+     * Almacena una nueva canción en el sistema.
+     * Implementa la lógica de persistencia de archivos físicos en el disco 'public'
+     * y registra los metadatos validados en la base de datos.
+     */
     public function storeSong(Request $request) {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
@@ -33,6 +51,7 @@ class AdminController extends Controller
             'collection_order' => 'nullable|integer',
         ]);
 
+        // Almacenamiento físico de archivos multimedia
         $audioPath = $request->file('audio_path')->store('songs', 'public');
         $coverPath = $request->file('cover_path')->store('covers', 'public');
 
@@ -41,10 +60,14 @@ class AdminController extends Controller
         $validated['status'] = 'active';
 
         $song = Song::create($validated);
-
         return response()->json($song, 201);
     }
 
+    /**
+     * Actualiza los datos de una canción existente.
+     * Incluye lógica de limpieza: si se suben nuevos archivos, se eliminan los anteriores
+     * del servidor para evitar el consumo innecesario de almacenamiento.
+     */
     public function updateSong(Request $request, Song $song) {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
@@ -58,7 +81,7 @@ class AdminController extends Controller
         ]);
 
         if ($request->hasFile('audio_path')) {
-            Storage::disk('public')->delete($song->audio_path);
+            Storage::disk('public')->delete($song->audio_path); // Eliminación del archivo antiguo
             $validated['audio_path'] = $request->file('audio_path')->store('songs', 'public');
         }
 
@@ -71,18 +94,20 @@ class AdminController extends Controller
         return response()->json($song);
     }
 
+    /**
+     * Alterna la visibilidad pública de una canción.
+     */
     public function toggleSongStatus(Request $request, Song $song) 
     {
         $request->validate(['status' => 'required|in:active,hidden']);
-        
         $song->update(['status' => $request->status]);
-
-        return response()->json([
-            'message' => "La canción ahora está en estado: {$request->status}",
-            'song' => $song
-        ]);
+        return response()->json(['song' => $song]);
     }
 
+    /**
+     * Borrado físico y lógico.
+     * Elimina el registro de la base de datos y los archivos asociados del servidor.
+     */
     public function destroySong(Song $song) {
         Storage::disk('public')->delete([$song->audio_path, $song->cover_path]);
         $song->delete();
@@ -90,11 +115,17 @@ class AdminController extends Controller
     }
 
     
-    // --- GESTIÓN DE USUARIOS ---
+    // --- SECCIÓN: MODERACIÓN DE USUARIOS ---
+
     public function listUsers() {
         return User::orderBy('created_at', 'desc')->get();
     }
 
+    /**
+     * Gestión de sanciones.
+     * Permite activar, suspender o bloquear usuarios, gestionando el tiempo
+     * de expiración para las suspensiones temporales.
+     */
     public function updateUserStatus(Request $request, User $user) {
         $request->validate([
             'status' => 'required|in:active,suspended,blocked',
@@ -106,11 +137,17 @@ class AdminController extends Controller
             'suspension_time' => $request->status === 'suspended' ? $request->suspension_time : null
         ]);
 
-        return response()->json(['message' => 'Estado del usuario actualizado', 'user' => $user]);
+        return response()->json(['user' => $user]);
     }    
 
 
-    // ESTADISTICAS
+    // --- SECCIÓN: ANALÍTICA Y BUSINESS INTELLIGENCE ---
+
+    /**
+     * Genera un resumen de métricas clave (KPIs).
+     * Realiza cálculos agregados (sumas y conteos) sobre usuarios, canciones y eventos
+     * para alimentar el Dashboard de estadísticas del administrador.
+     */
     public function getDashboardStats() 
     {
         return response()->json([
@@ -129,9 +166,13 @@ class AdminController extends Controller
         ]);
     }
 
+    /**
+     * Recupera el historial de eventos recientes.
+     * Utiliza Eager Loading ('with') para traer los nombres de las canciones asociadas
+     * de forma eficiente (Query Optimization).
+     */
     public function listEvents() 
     {
-        // Esta es la función que te faltaba para la tabla de eventos
         return Event::with('song:id,name')
                     ->orderBy('created_at', 'desc')
                     ->limit(100)
